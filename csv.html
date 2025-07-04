@@ -1,0 +1,1343 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sebastián Rejas Berríos - Ciencia de Datos</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <style>
+        :root {
+            --primary-dark: #7A8D9B;
+            --primary-light: #B2B9BF;
+            --accent-warm: #E3D4D0;
+            --accent-pink: #EED0C6;
+            --accent-beige: #DABEB6;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            color: #ffffff;
+            overflow-x: hidden;
+        }
+
+        .section {
+            min-height: 100vh;
+            padding: 60px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .content {
+            max-width: 1200px;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: center;
+        }
+
+        .text-content {
+            z-index: 2;
+        }
+
+        .text-content h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: var(--accent-warm);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .text-content h2 {
+            font-size: 2.5rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: var(--primary-light);
+        }
+
+        .text-content h3 {
+            font-size: 1.8rem;
+            font-weight: 500;
+            margin-bottom: 15px;
+            color: var(--accent-pink);
+        }
+
+        .text-content p {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .highlight {
+            color: var(--accent-warm);
+            font-weight: 600;
+        }
+
+        .visual-container {
+            position: relative;
+            height: 500px;
+            z-index: 1;
+        }
+
+        .intro-section {
+            background: linear-gradient(135deg, rgba(122, 141, 155, 0.1), rgba(45, 45, 45, 0.8));
+        }
+
+        .education-section {
+            background: linear-gradient(135deg, rgba(178, 185, 191, 0.1), rgba(30, 30, 30, 0.8));
+        }
+
+        .experience-section {
+            background: linear-gradient(135deg, rgba(227, 212, 208, 0.1), rgba(25, 25, 25, 0.8));
+        }
+
+        .startup-section {
+            background: linear-gradient(135deg, rgba(238, 208, 198, 0.1), rgba(35, 35, 35, 0.8));
+        }
+
+        .skills-section {
+            background: linear-gradient(135deg, rgba(218, 190, 182, 0.1), rgba(40, 40, 40, 0.8));
+        }
+
+        .passion-section {
+            background: linear-gradient(135deg, rgba(122, 141, 155, 0.1), rgba(20, 20, 20, 0.8));
+        }
+
+        .inspiration-section {
+            background: linear-gradient(135deg, rgba(178, 185, 191, 0.1), rgba(15, 15, 15, 0.8));
+        }
+
+        .future-section {
+            background: linear-gradient(135deg, rgba(227, 212, 208, 0.1), rgba(10, 10, 10, 0.8));
+        }
+
+        .contact-info {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+
+        .contact-info div {
+            margin-bottom: 5px;
+        }
+
+        .tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            pointer-events: none;
+            z-index: 1000;
+            max-width: 200px;
+            backdrop-filter: blur(10px);
+        }
+
+        .skill-card {
+            background: rgba(122, 141, 155, 0.1);
+            border: 1px solid var(--primary-light);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            transition: all 0.3s ease;
+        }
+
+        .skill-card:hover {
+            background: rgba(122, 141, 155, 0.2);
+            transform: translateY(-5px);
+        }
+
+        .draggable {
+            cursor: move;
+        }
+
+        .node-text {
+            font-size: 12px;
+            text-anchor: middle;
+            fill: white;
+            pointer-events: none;
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+            
+            .text-content h1 {
+                font-size: 2.5rem;
+            }
+            
+            .text-content h2 {
+                font-size: 2rem;
+            }
+            
+            .visual-container {
+                height: 300px;
+            }
+        }
+
+        .peru-shape {
+            fill: none;
+            stroke: var(--accent-warm);
+            stroke-width: 3;
+            opacity: 0.8;
+        }
+
+        .city-dot {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .city-dot:hover {
+            transform: scale(1.3);
+        }
+
+        .timeline-point {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .timeline-point:hover {
+            transform: scale(1.2);
+        }
+
+        .metric-bar {
+            transition: all 0.3s ease;
+        }
+
+        .metric-bar:hover {
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="contact-info">
+        <div>📧 sebastian.rejas@utec.edu.pe</div>
+        <div>📞 991573258</div>
+        <div>📍 Lima, Perú</div>
+    </div>
+
+    <!-- Introducción Personal -->
+    <section class="section intro-section">
+        <div class="content">
+            <div class="text-content">
+                <h1>Sebastián Rejas Berríos</h1>
+                <p>Nacido en Lima, Perú. Estudiante de <span class="highlight">Ciencia de Datos</span> en la Universidad de Ingeniería y Tecnología (UTEC), actualmente en el noveno ciclo.</p>
+                <p>Apasionado por la inteligencia artificial, la visualización de datos y el mar. Mi enfoque se basa en la <span class="highlight">excelencia técnica</span> y la aplicación real de modelos de IA para resolver problemas concretos.</p>
+            </div>
+            <div class="visual-container">
+                <svg id="peru-map" width="100%" height="100%"></svg>
+            </div>
+        </div>
+    </section>
+
+    <!-- Formación Académica -->
+    <section class="section education-section">
+        <div class="content">
+            <div class="text-content">
+                <h2>Formación Académica</h2>
+                <h3>Ciencia de Datos - UTEC</h3>
+                <p><strong>Cursos clave:</strong> Machine Learning, Investigación de Operaciones, Visualización de Datos, Sistemas Inteligentes, Ciencia de Redes, Cálculo Multivariable.</p>
+                <p>Actualmente en el <span class="highlight">9no ciclo</span>, con un enfoque en la aplicación práctica de la inteligencia artificial y el análisis de datos.</p>
+            </div>
+            <div class="visual-container">
+                <svg id="education-timeline" width="100%" height="100%"></svg>
+            </div>
+        </div>
+    </section>
+
+    <!-- Experiencia Profesional - SEVEM -->
+    <section class="section experience-section">
+        <div class="content">
+            <div class="text-content">
+                <h2>Experiencia Profesional</h2>
+                <h3>Analista de Datos & Arquitecto de Automatizaciones - SEVEM</h3>
+                <p><strong>Abril 2025 - Presente</strong></p>
+                <p>Lidero el stack de <span class="highlight">Business Intelligence</span> de la plataforma "Somos SEVEM", desarrollando dashboards en Power BI que monitorean en tiempo real más de 50 locales de eventos.</p>
+                <p>Optimicé consultas SQL en base MySQL multi-país, <span class="highlight">reduciendo tiempos de 12 a 2 minutos</span>. Implementé flujos automatizados para captar respuestas de clientes y agendar reuniones.</p>
+            </div>
+            <div class="visual-container">
+                <svg id="dashboard-metrics" width="100%" height="100%"></svg>
+            </div>
+        </div>
+    </section>
+
+    <!-- Startup - Shop Smart -->
+    <section class="section startup-section">
+        <div class="content">
+            <div class="text-content">
+                <h2>Startup y Emprendimiento</h2>
+                <h3>Co-Fundador - Shop Smart</h3>
+                <p><strong>2023</strong></p>
+                <p>Desarrollé una startup tecnológica que creó un <span class="highlight">recomendador inteligente</span> para tiendas online. Scrapeamos más de 1,000 productos, construimos un MVP funcional con IA.</p>
+                <p>Logramos <span class="highlight">vender la idea por S/. 9,000</span>, validando el potencial comercial de nuestras soluciones de inteligencia artificial.</p>
+            </div>
+            <div class="visual-container">
+                <svg id="startup-flow" width="100%" height="100%"></svg>
+            </div>
+        </div>
+    </section>
+
+    <!-- Habilidades Técnicas -->
+    <section class="section skills-section">
+        <div class="content">
+            <div class="text-content">
+                <h2>Habilidades Técnicas</h2>
+                <p><strong>Lenguajes:</strong> Python (avanzado), SQL, R (básico), JavaScript (básico)</p>
+                <p><strong>Machine Learning:</strong> Modelos supervisados y no supervisados, validación cruzada, métricas de evaluación</p>
+                <p><strong>Herramientas:</strong> Power BI, DAX, n8n, MySQL, Scikit-learn, TensorFlow, Pandas, NumPy</p>
+                <p><strong>Visualización:</strong> Power BI, Looker Studio, matplotlib, seaborn</p>
+                <p><strong>Automatización:</strong> Workflows en n8n, APIs, scraping con BeautifulSoup y Selenium</p>
+            </div>
+            <div class="visual-container">
+                <svg id="skills-radar" width="100%" height="100%"></svg>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pasiones y Vida Personal -->
+    <section class="section passion-section">
+        <div class="content">
+            <div class="text-content">
+                <h2>Pasiones y Vida Personal</h2>
+                <p>El <span class="highlight">surf</span> es más que un hobby, es una forma de vida. Me ha enseñado a leer las olas como leo los datos: con calma, observación y reacción precisa.</p>
+                <p>Cada caída en el mar me recuerda que todo se puede intentar de nuevo, y que lo importante es remar, no rendirse.</p>
+                <p>Cuando no estoy programando, estoy escuchando <span class="highlight">música indie</span>, caminando por la playa o filosofando sobre la vida —con una tabla o una laptop en mano.</p>
+            </div>
+            <div class="visual-container">
+                <svg id="passion-mosaic" width="100%" height="100%"></svg>
+            </div>
+        </div>
+    </section>
+
+    <!-- Inspiración -->
+    <section class="section inspiration-section">
+        <div class="content">
+            <div class="text-content">
+                <h2>Inspiración</h2>
+                <p>Mi crecimiento como profesional y persona se ha visto influenciado por referentes en tres áreas fundamentales: <span class="highlight">el deporte, el pensamiento crítico y la filosofía de vida</span>.</p>
+                <p><strong>🏄‍♂️ Surf:</strong> Kelly Slater, John John Florence</p>
+                <p><strong>🎓 Academia:</strong> René Descartes, Albert Camus, Alonso Rejas</p>
+                <p><strong>⚽ Fútbol:</strong> Cristiano Ronaldo</p>
+                <p>Estas figuras no solo me inspiran, sino que me guían cada vez que enfrento una decisión importante, un reto técnico o una ola en el mar.</p>
+            </div>
+            <div class="visual-container">
+                <svg id="inspiration-network" width="100%" height="100%"></svg>
+            </div>
+        </div>
+    </section>
+
+    <!-- Visión Futura -->
+    <section class="section future-section">
+        <div class="content">
+            <div class="text-content">
+                <h2>Visión Futura</h2>
+                <p>Mi camino no ha sido fácil. He aprendido que el esfuerzo no siempre tiene recompensa inmediata, pero <span class="highlight">el aprendizaje siempre se queda</span>.</p>
+                <p>Mi visión es usar la inteligencia artificial no solo para automatizar, sino para <span class="highlight">humanizar soluciones</span>. Quiero trabajar en proyectos donde la tecnología resuelva problemas reales.</p>
+                <p>Sigo remando —como en el mar—, con humildad, visión clara y el deseo de construir un futuro donde los datos y las personas coexistan con propósito.</p>
+            </div>
+            <div class="visual-container">
+                <svg id="future-vision" width="100%" height="100%"></svg>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // Paleta de colores
+        const colors = {
+            primary: '#7A8D9B',
+            light: '#B2B9BF',
+            warm: '#E3D4D0',
+            pink: '#EED0C6',
+            beige: '#DABEB6'
+        };
+
+        // Tooltip global
+        const tooltip = d3.select('body').append('div')
+            .attr('class', 'tooltip')
+            .style('opacity', 0);
+
+        // 1. Mapa de Perú mejorado
+        function createPeruMap() {
+            const svg = d3.select('#peru-map');
+            const width = 500;
+            const height = 500;
+            
+            svg.attr('viewBox', `0 0 ${width} ${height}`);
+
+            // Forma simplificada de Perú
+            const peruPath = `M 150 50 
+                             L 250 60 
+                             L 280 80 
+                             L 300 120 
+                             L 320 160 
+                             L 340 200 
+                             L 350 250 
+                             L 360 300 
+                             L 370 350 
+                             L 360 400 
+                             L 340 430 
+                             L 300 450 
+                             L 250 460 
+                             L 200 450 
+                             L 150 440 
+                             L 120 420 
+                             L 100 380 
+                             L 90 340 
+                             L 85 300 
+                             L 90 260 
+                             L 100 220 
+                             L 110 180 
+                             L 120 140 
+                             L 130 100 
+                             L 140 70 
+                             Z`;
+
+            // Dibujar el contorno de Perú
+            svg.append('path')
+                .attr('d', peruPath)
+                .attr('class', 'peru-shape')
+                .style('fill', 'none')
+                .style('stroke', colors.warm)
+                .style('stroke-width', 3)
+                .style('opacity', 0)
+                .transition()
+                .duration(2000)
+                .style('opacity', 0.8);
+
+            // Ciudades principales
+            const cities = [
+                {name: 'Lima', x: 200, y: 280, size: 12, isCapital: true},
+                {name: 'Cusco', x: 280, y: 320, size: 8, isCapital: false},
+                {name: 'Arequipa', x: 250, y: 370, size: 8, isCapital: false},
+                {name: 'Trujillo', x: 180, y: 180, size: 6, isCapital: false},
+                {name: 'Piura', x: 150, y: 120, size: 6, isCapital: false}
+            ];
+
+            // Agregar ciudades
+            const cityGroups = svg.selectAll('.city-group')
+                .data(cities)
+                .enter()
+                .append('g')
+                .attr('class', 'city-group')
+                .attr('transform', d => `translate(${d.x}, ${d.y})`);
+
+            cityGroups.append('circle')
+                .attr('class', 'city-dot')
+                .attr('r', 0)
+                .attr('fill', d => d.isCapital ? colors.pink : colors.primary)
+                .attr('stroke', colors.warm)
+                .attr('stroke-width', 2)
+                .transition()
+                .duration(1000)
+                .delay((d, i) => i * 300)
+                .attr('r', d => d.size);
+
+            cityGroups.append('text')
+                .attr('y', d => d.size + 20)
+                .attr('text-anchor', 'middle')
+                .attr('fill', colors.warm)
+                .attr('font-size', '12px')
+                .attr('font-weight', d => d.isCapital ? 'bold' : 'normal')
+                .style('opacity', 0)
+                .text(d => d.name)
+                .transition()
+                .duration(1000)
+                .delay((d, i) => i * 300 + 500)
+                .style('opacity', 1);
+
+            // Interactividad
+            cityGroups.on('mouseover', function(event, d) {
+                d3.select(this).select('circle')
+                    .transition()
+                    .duration(200)
+                    .attr('r', d.size * 1.5);
+                
+                tooltip.transition().duration(200).style('opacity', .9);
+                tooltip.html(`${d.name}${d.isCapital ? '<br/>Capital del Perú' : ''}`)
+                    .style('left', (event.pageX + 10) + 'px')
+                    .style('top', (event.pageY - 28) + 'px');
+            })
+            .on('mouseout', function(event, d) {
+                d3.select(this).select('circle')
+                    .transition()
+                    .duration(200)
+                    .attr('r', d.size);
+                
+                tooltip.transition().duration(500).style('opacity', 0);
+            });
+        }
+
+        // 2. Timeline académica mejorada
+        function createEducationTimeline() {
+            const svg = d3.select('#education-timeline');
+            const width = 500;
+            const height = 400;
+            
+            svg.attr('viewBox', `0 0 ${width} ${height}`);
+
+            const timelineData = [
+                {cycle: 1, year: '2021', event: 'Inicio UTEC', description: 'Comienzo en Ciencia de Datos', x: 80, y: 350},
+                {cycle: 3, year: '2022', event: 'Fundamentos ML', description: 'Primer contacto con Machine Learning', x: 150, y: 280},
+                {cycle: 5, year: '2023', event: 'Shop Smart', description: 'Cofundación de startup', x: 220, y: 210},
+                {cycle: 7, year: '2024', event: 'Sistemas Inteligentes', description: 'Especialización en IA', x: 290, y: 140},
+                {cycle: 9, year: '2025', event: 'SEVEM - Actual', description: 'Analista de Datos profesional', x: 360, y: 70}
+            ];
+
+            // Línea de conexión
+            const line = d3.line()
+                .x(d => d.x)
+                .y(d => d.y)
+                .curve(d3.curveBasis);
+
+            svg.append('path')
+                .datum(timelineData)
+                .attr('fill', 'none')
+                .attr('stroke', colors.primary)
+                .attr('stroke-width', 3)
+                .attr('opacity', 0.6)
+                .attr('d', line)
+                .style('stroke-dasharray', '1000')
+                .style('stroke-dashoffset', '1000')
+                .transition()
+                .duration(3000)
+                .style('stroke-dashoffset', '0');
+
+            // Puntos de timeline
+            const points = svg.selectAll('.timeline-point')
+                .data(timelineData)
+                .enter()
+                .append('g')
+                .attr('class', 'timeline-point')
+                .attr('transform', d => `translate(${d.x}, ${d.y})`);
+
+            points.append('circle')
+                .attr('r', 0)
+                .attr('fill', colors.pink)
+                .attr('stroke', colors.warm)
+                .attr('stroke-width', 3)
+                .transition()
+                .duration(600)
+                .delay((d, i) => i * 400)
+                .attr('r', 12);
+
+            points.append('text')
+                .attr('y', -20)
+                .attr('text-anchor', 'middle')
+                .attr('fill', colors.warm)
+                .attr('font-size', '11px')
+                .attr('font-weight', 'bold')
+                .style('opacity', 0)
+                .text(d => d.event)
+                .transition()
+                .duration(600)
+                .delay((d, i) => i * 400 + 300)
+                .style('opacity', 1);
+
+            points.append('text')
+                .attr('y', 30)
+                .attr('text-anchor', 'middle')
+                .attr('fill', colors.light)
+                .attr('font-size', '9px')
+                .style('opacity', 0)
+                .text(d => `${d.cycle}° ciclo - ${d.year}`)
+                .transition()
+                .duration(600)
+                .delay((d, i) => i * 400 + 600)
+                .style('opacity', 1);
+
+            // Interactividad
+            points.on('mouseover', function(event, d) {
+                d3.select(this).select('circle')
+                    .transition()
+                    .duration(200)
+                    .attr('r', 16);
+                
+                tooltip.transition().duration(200).style('opacity', .9);
+                tooltip.html(`${d.event}<br/>${d.description}`)
+                    .style('left', (event.pageX + 10) + 'px')
+                    .style('top', (event.pageY - 28) + 'px');
+            })
+            .on('mouseout', function(event, d) {
+                d3.select(this).select('circle')
+                    .transition()
+                    .duration(200)
+                    .attr('r', 12);
+                
+                tooltip.transition().duration(500).style('opacity', 0);
+            });
+        }
+
+        // 3. Dashboard de métricas SEVEM mejorado
+        function createDashboardMetrics() {
+            const svg = d3.select('#dashboard-metrics');
+            const width = 500;
+            const height = 400;
+            
+            svg.attr('viewBox', `0 0 ${width} ${height}`);
+
+            const metrics = [
+                {name: 'Locales Monitoreados', value: 50, max: 60, icon: '🏢'},
+                {name: 'Tiempo Optimización', value: 83, max: 100, icon: '⚡'},
+                {name: 'Dashboards Creados', value: 8, max: 10, icon: '📊'},
+                {name: 'Países Operando', value: 2, max: 3, icon: '🌎'}
+            ];
+
+            // Crear gráfico circular para cada métrica
+            metrics.forEach((metric, i) => {
+                const centerX = (i % 2) * 250 + 125;
+                const centerY = Math.floor(i / 2) * 200 + 100;
+                const radius = 60;
+
+                // Círculo de fondo
+                svg.append('circle')
+                    .attr('cx', centerX)
+                    .attr('cy', centerY)
+                    .attr('r', radius)
+                    .attr('fill', 'none')
+                    .attr('stroke', 'rgba(255,255,255,0.1)')
+                    .attr('stroke-width', 8);
+
+                // Círculo de progreso
+                const circumference = 2 * Math.PI * radius;
+                const progress = (metric.value / metric.max) * circumference;
+
+                svg.append('circle')
+                    .attr('cx', centerX)
+                    .attr('cy', centerY)
+                    .attr('r', radius)
+                    .attr('fill', 'none')
+                    .attr('stroke', colors.primary)
+                    .attr('stroke-width', 8)
+                    .attr('stroke-linecap', 'round')
+                    .style('stroke-dasharray', circumference)
+                    .style('stroke-dashoffset', circumference)
+                    .style('transform-origin', `${centerX}px ${centerY}px`)
+                    .style('transform', 'rotate(-90deg)')
+                    .transition()
+                    .duration(2000)
+                    .delay(i * 300)
+                    .style('stroke-dashoffset', circumference - progress);
+
+                // Icono central
+                svg.append('text')
+                    .attr('x', centerX)
+                    .attr('y', centerY - 5)
+                    .attr('text-anchor', 'middle')
+                    .attr('font-size', '24px')
+                    .text(metric.icon);
+
+                // Valor
+                svg.append('text')
+                    .attr('x', centerX)
+                    .attr('y', centerY + 15)
+                    .attr('text-anchor', 'middle')
+                    .attr('fill', colors.warm)
+                    .attr('font-size', '16px')
+                    .attr('font-weight', 'bold')
+                    .text(metric.value);
+
+                // Etiqueta
+                svg.append('text')
+                    .attr('x', centerX)
+                    .attr('y', centerY + radius + 25)
+                    .attr('text-anchor', 'middle')
+                    .attr('fill', colors.light)
+                    .attr('font-size', '12px')
+                    .text(metric.name);
+            });
+        }
+
+        // 4. Flujo de Startup mejorado
+        function createStartupFlow() {
+            const svg = d3.select('#startup-flow');
+            const width = 500;
+            const height = 400;
+            
+            svg.attr('viewBox', `0 0 ${width} ${height}`);
+
+            const flowSteps = [
+                {id: 'idea', name: 'Idea Inicial', x: 100, y: 200, description: 'Concepto de recomendador IA'},
+                {id: 'research', name: 'Investigación', x: 200, y: 120, description: 'Análisis de mercado y tecnología'},
+                {id: 'development', name: 'Desarrollo', x: 300, y: 200, description: 'MVP con scraping y ML'},
+                {id: 'testing', name: 'Testing', x: 400, y: 120, description: '1000+ productos analizados'},
+                {id: 'sale', name: 'Venta S/.9K', x: 400, y: 280, description: 'Éxito comercial validado'}
+            ];
+
+            const connections = [
+                {from: 'idea', to: 'research'},
+                {from: 'research', to: 'development'},
+                {from: 'development', to: 'testing'},
+                {from: 'testing', to: 'sale'}
+            ];
+
+            // Crear conexiones
+            connections.forEach((conn, i) => {
+                const fromNode = flowSteps.find(s => s.id === conn.from);
+                const toNode = flowSteps.find(s => s.id === conn.to);
+                
+                svg.append('line')
+                    .attr('x1', fromNode.x)
+                    .attr('y1', fromNode.y)
+                    .attr('x2', toNode.x)
+                    .attr('y2', toNode.y)
+                    .attr('stroke', colors.primary)
+                    .attr('stroke-width', 3)
+                    .attr('opacity', 0.6)
+                    .attr('marker-end', 'url(#arrowhead)')
+                    .style('stroke-dasharray', '100')
+                    .style('stroke-dashoffset', '100')
+                    .transition()
+                    .duration(1000)
+                    .delay(i * 500)
+                    .style('stroke-dashoffset', '0');
+            });
+
+            // Definir marcador de flecha
+            svg.append('defs').append('marker')
+                .attr('id', 'arrowhead')
+                .attr('viewBox', '-0 -5 10 10')
+                .attr('refX', 8)
+                .attr('refY', 0)
+                .attr('orient', 'auto')
+                .attr('markerWidth', 6)
+                .attr('markerHeight', 6)
+                .append('path')
+                .attr('d', 'M 0,-5 L 10 ,0 L 0,5')
+                .attr('fill', colors.primary);
+
+            // Crear nodos del flujo
+            const flowNodes = svg.selectAll('.flow-node')
+                .data(flowSteps)
+                .enter()
+                .append('g')
+                .attr('class', 'flow-node')
+                .attr('transform', d => `translate(${d.x}, ${d.y})`)
+                .style('cursor', 'pointer');
+
+            flowNodes.append('circle')
+                .attr('r', 0)
+                .attr('fill', d => d.id === 'sale' ? colors.pink : colors.primary)
+                .attr('stroke', colors.warm)
+                .attr('stroke-width', 3)
+                .transition()
+                .duration(800)
+                .delay((d, i) => i * 400)
+                .attr('r', d => d.id === 'sale' ? 35 : 25);
+
+            flowNodes.append('text')
+                .attr('text-anchor', 'middle')
+                .attr('dy', 4)
+                .attr('fill', '#fff')
+                .attr('font-size', '10px')
+                .attr('font-weight', 'bold')
+                .style('opacity', 0)
+                .text(d => d.name)
+                .transition()
+                .duration(600)
+                .delay((d, i) => i * 400 + 400)
+                .style('opacity', 1);
+
+            // Interactividad
+            flowNodes.on('mouseover', function(event, d) {
+                d3.select(this).select('circle')
+                    .transition()
+                    .duration(200)
+                    .attr('r', d => (d.id === 'sale' ? 40 : 30));
+                
+                tooltip.transition().duration(200).style('opacity', .9);
+                tooltip.html(`${d.name}<br/>${d.description}`)
+                    .style('left', (event.pageX + 10) + 'px')
+                    .style('top', (event.pageY - 28) + 'px');
+            })
+            .on('mouseout', function(event, d) {
+                d3.select(this).select('circle')
+                    .transition()
+                    .duration(200)
+                    .attr('r', d => (d.id === 'sale' ? 35 : 25));
+                
+                tooltip.transition().duration(500).style('opacity', 0);
+            });
+        }
+
+        // 5. Radar de habilidades
+        function createSkillsRadar() {
+            const svg = d3.select('#skills-radar');
+            const width = 500;
+            const height = 400;
+            
+            svg.attr('viewBox', `0 0 ${width} ${height}`);
+
+            const skills = [
+                {name: 'Python', level: 90},
+                {name: 'SQL', level: 85},
+                {name: 'Machine Learning', level: 80},
+                {name: 'Power BI', level: 85},
+                {name: 'TensorFlow', level: 75},
+                {name: 'D3.js', level: 70},
+                {name: 'R', level: 60},
+                {name: 'JavaScript', level: 65}
+            ];
+
+            const centerX = width / 2;
+            const centerY = height / 2;
+            const maxRadius = 120;
+            const levels = 5;
+
+            // Crear círculos concéntricos
+            for (let i = 1; i <= levels; i++) {
+                svg.append('circle')
+                    .attr('cx', centerX)
+                    .attr('cy', centerY)
+                    .attr('r', (maxRadius / levels) * i)
+                    .attr('fill', 'none')
+                    .attr('stroke', 'rgba(255,255,255,0.1)')
+                    .attr('stroke-width', 1);
+            }
+
+            // Crear líneas radiales
+            skills.forEach((skill, i) => {
+                const angle = (i * 2 * Math.PI) / skills.length - Math.PI / 2;
+                const x2 = centerX + Math.cos(angle) * maxRadius;
+                const y2 = centerY + Math.sin(angle) * maxRadius;
+
+                svg.append('line')
+                    .attr('x1', centerX)
+                    .attr('y1', centerY)
+                    .attr('x2', x2)
+                    .attr('y2', y2)
+                    .attr('stroke', 'rgba(255,255,255,0.1)')
+                    .attr('stroke-width', 1);
+
+                // Etiquetas de habilidades
+                const labelRadius = maxRadius + 20;
+                const labelX = centerX + Math.cos(angle) * labelRadius;
+                const labelY = centerY + Math.sin(angle) * labelRadius;
+
+                svg.append('text')
+                    .attr('x', labelX)
+                    .attr('y', labelY)
+                    .attr('text-anchor', 'middle')
+                    .attr('dy', 4)
+                    .attr('fill', colors.warm)
+                    .attr('font-size', '11px')
+                    .attr('font-weight', 'bold')
+                    .text(skill.name);
+            });
+
+            // Crear polígono de habilidades
+            const points = skills.map((skill, i) => {
+                const angle = (i * 2 * Math.PI) / skills.length - Math.PI / 2;
+                const radius = (skill.level / 100) * maxRadius;
+                const x = centerX + Math.cos(angle) * radius;
+                const y = centerY + Math.sin(angle) * radius;
+                return [x, y];
+            });
+
+            const pathData = 'M' + points.map(p => p.join(',')).join('L') + 'Z';
+
+            svg.append('path')
+                .attr('d', pathData)
+                .attr('fill', colors.primary)
+                .attr('fill-opacity', 0.3)
+                .attr('stroke', colors.primary)
+                .attr('stroke-width', 2)
+                .style('stroke-dasharray', '1000')
+                .style('stroke-dashoffset', '1000')
+                .transition()
+                .duration(2000)
+                .style('stroke-dashoffset', '0');
+
+            // Puntos en cada habilidad
+            skills.forEach((skill, i) => {
+                const angle = (i * 2 * Math.PI) / skills.length - Math.PI / 2;
+                const radius = (skill.level / 100) * maxRadius;
+                const x = centerX + Math.cos(angle) * radius;
+                const y = centerY + Math.sin(angle) * radius;
+
+                svg.append('circle')
+                    .attr('cx', x)
+                    .attr('cy', y)
+                    .attr('r', 0)
+                    .attr('fill', colors.pink)
+                    .attr('stroke', colors.warm)
+                    .attr('stroke-width', 2)
+                    .transition()
+                    .duration(600)
+                    .delay(i * 200)
+                    .attr('r', 6)
+                    .on('end', function() {
+                        d3.select(this)
+                            .on('mouseover', function() {
+                                d3.select(this)
+                                    .transition()
+                                    .duration(200)
+                                    .attr('r', 10);
+                                
+                                tooltip.transition().duration(200).style('opacity', .9);
+                                tooltip.html(`${skill.name}: ${skill.level}%`)
+                                    .style('left', (d3.event.pageX + 10) + 'px')
+                                    .style('top', (d3.event.pageY - 28) + 'px');
+                            })
+                            .on('mouseout', function() {
+                                d3.select(this)
+                                    .transition()
+                                    .duration(200)
+                                    .attr('r', 6);
+                                
+                                tooltip.transition().duration(500).style('opacity', 0);
+                            });
+                    });
+            });
+        }
+
+        // 6. Mosaico de pasiones mejorado
+        function createPassionMosaic() {
+            const svg = d3.select('#passion-mosaic');
+            const width = 500;
+            const height = 400;
+            
+            svg.attr('viewBox', `0 0 ${width} ${height}`);
+
+            const passions = [
+                {name: 'Surf', emoji: '🏄‍♂️', x: 150, y: 150, size: 60, color: colors.primary},
+                {name: 'Música', emoji: '🎵', x: 350, y: 120, size: 45, color: colors.warm},
+                {name: 'Fotografía', emoji: '📸', x: 120, y: 280, size: 40, color: colors.pink},
+                {name: 'Mar', emoji: '🌊', x: 380, y: 280, size: 50, color: colors.beige},
+                {name: 'Filosofía', emoji: '💭', x: 250, y: 200, size: 35, color: colors.light}
+            ];
+
+            // Crear círculos de pasiones con simulación de fuerzas
+            const simulation = d3.forceSimulation(passions)
+                .force('collision', d3.forceCollide().radius(d => d.size + 10))
+                .force('center', d3.forceCenter(width / 2, height / 2))
+                .force('charge', d3.forceManyBody().strength(-100));
+
+            const passionNodes = svg.selectAll('.passion-node')
+                .data(passions)
+                .enter()
+                .append('g')
+                .attr('class', 'passion-node draggable')
+                .style('cursor', 'move');
+
+            passionNodes.append('circle')
+                .attr('r', d => d.size)
+                .attr('fill', d => d.color)
+                .attr('opacity', 0.7)
+                .attr('stroke', colors.warm)
+                .attr('stroke-width', 3);
+
+            passionNodes.append('text')
+                .attr('text-anchor', 'middle')
+                .attr('dy', -5)
+                .attr('font-size', '24px')
+                .text(d => d.emoji);
+
+            passionNodes.append('text')
+                .attr('text-anchor', 'middle')
+                .attr('dy', 15)
+                .attr('fill', '#fff')
+                .attr('font-size', '12px')
+                .attr('font-weight', 'bold')
+                .text(d => d.name);
+
+            // Actualizar posiciones
+            simulation.on('tick', () => {
+                passionNodes
+                    .attr('transform', d => `translate(${d.x}, ${d.y})`);
+            });
+
+            // Drag behavior
+            const drag = d3.drag()
+                .on('start', function(event, d) {
+                    if (!event.active) simulation.alphaTarget(0.3).restart();
+                    d.fx = d.x;
+                    d.fy = d.y;
+                })
+                .on('drag', function(event, d) {
+                    d.fx = event.x;
+                    d.fy = event.y;
+                })
+                .on('end', function(event, d) {
+                    if (!event.active) simulation.alphaTarget(0);
+                    d.fx = null;
+                    d.fy = null;
+                });
+
+            passionNodes.call(drag);
+
+            // Interactividad
+            passionNodes.on('mouseover', function(event, d) {
+                d3.select(this).select('circle')
+                    .transition()
+                    .duration(200)
+                    .attr('r', d.size * 1.2)
+                    .attr('opacity', 0.9);
+            })
+            .on('mouseout', function(event, d) {
+                d3.select(this).select('circle')
+                    .transition()
+                    .duration(200)
+                    .attr('r', d.size)
+                    .attr('opacity', 0.7);
+            });
+        }
+
+        // 7. Red de inspiración mejorada con drag
+        function createInspirationNetwork() {
+            const svg = d3.select('#inspiration-network');
+            const width = 500;
+            const height = 400;
+            
+            svg.attr('viewBox', `0 0 ${width} ${height}`);
+
+            const nodes = [
+                {id: 'sebas', name: 'Sebastián', type: 'center', group: 0},
+                {id: 'surf', name: '🏄‍♂️ Surf', type: 'category', group: 1},
+                {id: 'academia', name: '🎓 Academia', type: 'category', group: 2},
+                {id: 'futbol', name: '⚽ Fútbol', type: 'category', group: 3},
+                {id: 'kelly', name: 'Kelly Slater', type: 'person', group: 1},
+                {id: 'john', name: 'John John Florence', type: 'person', group: 1},
+                {id: 'descartes', name: 'René Descartes', type: 'person', group: 2},
+                {id: 'camus', name: 'Albert Camus', type: 'person', group: 2},
+                {id: 'alonso', name: 'Alonso Rejas', type: 'person', group: 2},
+                {id: 'cristiano', name: 'Cristiano Ronaldo', type: 'person', group: 3}
+            ];
+
+            const links = [
+                {source: 'sebas', target: 'surf'},
+                {source: 'sebas', target: 'academia'},
+                {source: 'sebas', target: 'futbol'},
+                {source: 'surf', target: 'kelly'},
+                {source: 'surf', target: 'john'},
+                {source: 'academia', target: 'descartes'},
+                {source: 'academia', target: 'camus'},
+                {source: 'academia', target: 'alonso'},
+                {source: 'futbol', target: 'cristiano'}
+            ];
+
+            // Crear simulación de fuerzas
+            const simulation = d3.forceSimulation(nodes)
+                .force('link', d3.forceLink(links).id(d => d.id).distance(80))
+                .force('charge', d3.forceManyBody().strength(-300))
+                .force('center', d3.forceCenter(width / 2, height / 2));
+
+            // Crear enlaces
+            const link = svg.selectAll('.link')
+                .data(links)
+                .enter()
+                .append('line')
+                .attr('class', 'link')
+                .attr('stroke', colors.light)
+                .attr('stroke-width', 2)
+                .attr('opacity', 0.6);
+
+            // Crear nodos
+            const node = svg.selectAll('.node')
+                .data(nodes)
+                .enter()
+                .append('g')
+                .attr('class', 'node draggable')
+                .style('cursor', 'move');
+
+            node.append('circle')
+                .attr('r', d => d.type === 'center' ? 30 : d.type === 'category' ? 20 : 15)
+                .attr('fill', d => {
+                    if (d.type === 'center') return colors.warm;
+                    if (d.type === 'category') return colors.primary;
+                    return colors.pink;
+                })
+                .attr('stroke', colors.light)
+                .attr('stroke-width', 2);
+
+            node.append('text')
+                .attr('text-anchor', 'middle')
+                .attr('dy', 4)
+                .attr('fill', '#fff')
+                .attr('font-size', d => d.type === 'center' ? '12px' : d.type === 'category' ? '10px' : '8px')
+                .attr('font-weight', 'bold')
+                .text(d => d.name);
+
+            // Drag behavior
+            const drag = d3.drag()
+                .on('start', function(event, d) {
+                    if (!event.active) simulation.alphaTarget(0.3).restart();
+                    d.fx = d.x;
+                    d.fy = d.y;
+                })
+                .on('drag', function(event, d) {
+                    d.fx = event.x;
+                    d.fy = event.y;
+                })
+                .on('end', function(event, d) {
+                    if (!event.active) simulation.alphaTarget(0);
+                    d.fx = null;
+                    d.fy = null;
+                });
+
+            node.call(drag);
+
+            // Actualizar posiciones
+            simulation.on('tick', () => {
+                link
+                    .attr('x1', d => d.source.x)
+                    .attr('y1', d => d.source.y)
+                    .attr('x2', d => d.target.x)
+                    .attr('y2', d => d.target.y);
+
+                node
+                    .attr('transform', d => `translate(${d.x}, ${d.y})`);
+            });
+
+            // Interactividad
+            node.on('mouseover', function(event, d) {
+                if (d.type !== 'center') {
+                    d3.select(this).select('circle')
+                        .transition()
+                        .duration(200)
+                        .attr('r', d => (d.type === 'category' ? 25 : 20));
+                }
+            })
+            .on('mouseout', function(event, d) {
+                if (d.type !== 'center') {
+                    d3.select(this).select('circle')
+                        .transition()
+                        .duration(200)
+                        .attr('r', d => (d.type === 'category' ? 20 : 15));
+                }
+            });
+        }
+
+        // 8. Visión futura con diamante animado
+        function createFutureVision() {
+            const svg = d3.select('#future-vision');
+            const width = 500;
+            const height = 400;
+            
+            svg.attr('viewBox', `0 0 ${width} ${height}`);
+
+            const centerX = width / 2;
+            const centerY = height / 2;
+
+            // Crear estructura de diamante para representar la visión
+            const visionLevels = [
+                {level: 'Fundamentos', y: centerY + 120, items: ['Datos', 'Código', 'Lógica']},
+                {level: 'Aplicación', y: centerY + 60, items: ['BI', 'ML', 'Automatización']},
+                {level: 'Innovación', y: centerY, items: ['IA Humanizada', 'Soluciones Reales']},
+                {level: 'Impacto', y: centerY - 60, items: ['Transformación Social']},
+                {level: 'Visión', y: centerY - 120, items: ['Futuro IA + Humanos']}
+            ];
+
+            // Dibujar estructura de diamante
+            visionLevels.forEach((level, levelIndex) => {
+                const itemWidth = 400 / (level.items.length + 1);
+                
+                level.items.forEach((item, itemIndex) => {
+                    const x = centerX - (level.items.length - 1) * itemWidth / 2 + itemIndex * itemWidth;
+                    
+                    // Crear nodo
+                    const node = svg.append('g')
+                        .attr('transform', `translate(${x}, ${level.y})`)
+                        .style('opacity', 0);
+
+                    node.append('circle')
+                        .attr('r', 25)
+                        .attr('fill', colors.primary)
+                        .attr('stroke', colors.warm)
+                        .attr('stroke-width', 2);
+
+                    node.append('text')
+                        .attr('text-anchor', 'middle')
+                        .attr('dy', 4)
+                        .attr('fill', '#fff')
+                        .attr('font-size', '10px')
+                        .attr('font-weight', 'bold')
+                        .text(item);
+
+                    // Animación de aparición
+                    node.transition()
+                        .duration(800)
+                        .delay(levelIndex * 400 + itemIndex * 200)
+                        .style('opacity', 1)
+                        .attr('transform', `translate(${x}, ${level.y}) scale(1)`);
+
+                    // Conectar con nivel anterior
+                    if (levelIndex > 0) {
+                        const prevLevel = visionLevels[levelIndex - 1];
+                        prevLevel.items.forEach((prevItem, prevIndex) => {
+                            const prevX = centerX - (prevLevel.items.length - 1) * (400 / (prevLevel.items.length + 1)) / 2 + 
+                                         prevIndex * (400 / (prevLevel.items.length + 1));
+                            
+                            svg.append('line')
+                                .attr('x1', prevX)
+                                .attr('y1', prevLevel.y)
+                                .attr('x2', x)
+                                .attr('y2', level.y)
+                                .attr('stroke', colors.light)
+                                .attr('stroke-width', 1)
+                                .attr('opacity', 0.3)
+                                .style('stroke-dasharray', '50')
+                                .style('stroke-dashoffset', '50')
+                                .transition()
+                                .duration(1000)
+                                .delay(levelIndex * 400)
+                                .style('stroke-dashoffset', '0');
+                        });
+                    }
+                });
+
+                // Etiqueta del nivel
+                svg.append('text')
+                    .attr('x', 50)
+                    .attr('y', level.y + 5)
+                    .attr('fill', colors.warm)
+                    .attr('font-size', '12px')
+                    .attr('font-weight', 'bold')
+                    .style('opacity', 0)
+                    .text(level.level)
+                    .transition()
+                    .duration(600)
+                    .delay(levelIndex * 400)
+                    .style('opacity', 1);
+            });
+
+            // Añadir efecto de partículas ascendentes
+            const particles = [];
+            for (let i = 0; i < 20; i++) {
+                particles.push({
+                    x: Math.random() * width,
+                    y: height,
+                    vy: -1 - Math.random() * 2,
+                    opacity: Math.random() * 0.5 + 0.1
+                });
+            }
+
+            function animateParticles() {
+                particles.forEach(particle => {
+                    particle.y += particle.vy;
+                    if (particle.y < 0) {
+                        particle.y = height;
+                        particle.x = Math.random() * width;
+                    }
+                });
+
+                svg.selectAll('.future-particle')
+                    .data(particles)
+                    .join('circle')
+                    .attr('class', 'future-particle')
+                    .attr('cx', d => d.x)
+                    .attr('cy', d => d.y)
+                    .attr('r', 2)
+                    .attr('fill', colors.warm)
+                    .attr('opacity', d => d.opacity);
+
+                requestAnimationFrame(animateParticles);
+            }
+
+            setTimeout(animateParticles, 2000);
+        }
+
+        // Inicializar todas las visualizaciones
+        function initializeVisualizations() {
+            createPeruMap();
+            createEducationTimeline();
+            createDashboardMetrics();
+            createStartupFlow();
+            createSkillsRadar();
+            createPassionMosaic();
+            createInspirationNetwork();
+            createFutureVision();
+        }
+
+        // Intersection Observer para animaciones al scroll
+        function setupScrollAnimations() {
+            const sections = document.querySelectorAll('.section');
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, {
+                threshold: 0.1,
+                rootMargin: '0px 0px -100px 0px'
+            });
+
+            sections.forEach(section => {
+                section.style.opacity = '0';
+                section.style.transform = 'translateY(50px)';
+                section.style.transition = 'opacity 0.8s ease, transform 0.8s ease';
+                observer.observe(section);
+            });
+        }
+
+        // Responsive design
+        function handleResize() {
+            const visualContainers = document.querySelectorAll('.visual-container svg');
+            visualContainers.forEach(svg => {
+                d3.select(svg).selectAll('*').remove();
+            });
+            
+            setTimeout(() => {
+                initializeVisualizations();
+            }, 100);
+        }
+
+        window.addEventListener('resize', debounce(handleResize, 250));
+
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        // Inicializar todo cuando se carga la página
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeVisualizations();
+            setupScrollAnimations();
+            
+            // Smooth scroll para navegación
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                });
+            });
+        });
+
+    </script>
+</body>
+</html>
